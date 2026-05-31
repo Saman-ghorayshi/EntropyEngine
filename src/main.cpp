@@ -2,41 +2,41 @@
 #include "core/GameState.hpp"
 #include "core/PhysicsEngine.hpp"
 #include "core/LevelGen.hpp"
+#include "ai/Solver.hpp" 
 
 using namespace std;
 
-// quick draw in terminal
 void print_board(const GameState& s) {
-    cout << "\n=== CURRENT  BOARD ===" << endl;
-    for(int i = 0; i < s.board.size();i++) {
+    cout << "\n=== CURRENT BOARD ===" << endl;
+    for(int i = 0; i < s.board.size(); i++) {
         cout << "Flask " << i << ": [ ";
         for(int c : s.board[i].colors) {
             cout << c << " ";
         }
-        cout << "]" << endl;
+        cout << "]" <<endl;
     }
-    cout << "==========================\n" <<  endl;
+    cout << "=========================\n"<< endl;
 }
 
 int main() {
-    cout << "[SYSTEM] Entropy Engine Booting..." <<endl;
+    cout << "[SYSTEM] Entropy Engine AI Mode Booting..."  <<  endl;
     
-    // lets make a level with 3 colors, 2 empty flasks, and scramble it 15 times
+    // making a bit smaller level so the basic BFS doesnt take 10 minutes 
     cout << "Generating puzzle..." << endl;
-    GameState s = LevelGen::make_level(3, 2, 15);
+    GameState s = LevelGen::make_level(4, 2,20); 
     
     print_board(s);
 
-    // a player making a move
-    cout << "Attempting to pour Flask 0 into Flask 1..." <<endl;
-    if(PhysicsEngine::can_pour(s, 0, 1)) {
-        s = PhysicsEngine::do_pour(s, 0, 1);
-        cout << ">> Move succesful!" << endl;
-    } else {
-        cout << ">> Illegal move!" << endl;
+    cout << "[AI] Dispatching BFS Graph Solver..." <<endl;
+    vector<Move> win_path = Solver::solve_bfs(s);
+
+    if(!win_path.empty()) {
+        cout << ">> Optimal solution found in " << win_path.size() <<" moves:" << endl;
+        for(int i = 0; i < win_path.size(); i++) {
+            cout << "   Step " << i+1 << ": Pour Flask " << win_path[i].from << " -> Flask " << win_path[i].to << endl;
+        }
     }
 
-    print_board(s);
-
     return 0;
+    
 }
