@@ -1,37 +1,42 @@
 #include <iostream>
 #include "core/GameState.hpp"
-#include "core/PhysicsEngine.hpp" 
+#include "core/PhysicsEngine.hpp"
+#include "core/LevelGen.hpp"
 
 using namespace std;
 
+// quick draw in terminal
+void print_board(const GameState& s) {
+    cout << "\n=== CURRENT  BOARD ===" << endl;
+    for(int i = 0; i < s.board.size();i++) {
+        cout << "Flask " << i << ": [ ";
+        for(int c : s.board[i].colors) {
+            cout << c << " ";
+        }
+        cout << "]" << endl;
+    }
+    cout << "==========================\n" <<  endl;
+}
+
 int main() {
-    cout << "[SYSTEM] running physics tests  ..." << endl;
-
-    GameState s;
-    Flask f1; f1.colors = {1, 2, 2}; 
-    Flask f2; f2.colors = {1};       
-    Flask f3; f3.colors = {2};       
-
-    s.board.push_back(f1); 
-    s.board.push_back(f2); 
-    s.board.push_back(f3); 
-
-    // test 1: illegal move (pouring 2 onto 1)
-    if(PhysicsEngine::can_pour(s, 0, 1)) {
-        cout << ">> ERR: allowed an illegal pour." << endl;
-    } else {
-        cout << ">> pass: blocked illegal pour." << endl;
-    }
-
-    // test 2: legal move (pouring the two 2s onto the other 2)
-    GameState next_s = PhysicsEngine::do_pour(s, 0, 2);
+    cout << "[SYSTEM] Entropy Engine Booting..." <<endl;
     
-    // f1 should now only have one item (the 1)  f3 should have three items (2, 2, 2)
-    if(next_s.board[0].colors.size() == 1 && next_s.board[2].colors.size() == 3) {
-        cout << ">> pass: liquids transfered correctly." << endl;
+    // lets make a level with 3 colors, 2 empty flasks, and scramble it 15 times
+    cout << "Generating puzzle..." << endl;
+    GameState s = LevelGen::make_level(3, 2, 15);
+    
+    print_board(s);
+
+    // a player making a move
+    cout << "Attempting to pour Flask 0 into Flask 1..." <<endl;
+    if(PhysicsEngine::can_pour(s, 0, 1)) {
+        s = PhysicsEngine::do_pour(s, 0, 1);
+        cout << ">> Move succesful!" << endl;
     } else {
-        cout << ">> ERR: liquid math is broken." << endl;
+        cout << ">> Illegal move!" << endl;
     }
+
+    print_board(s);
 
     return 0;
 }
