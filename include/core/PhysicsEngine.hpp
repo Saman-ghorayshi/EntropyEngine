@@ -1,5 +1,5 @@
 #pragma once
-#include "GameState.hpp"
+#include "core/GameState.hpp"
 
 using namespace std;
 

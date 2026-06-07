@@ -1,6 +1,7 @@
 #pragma once
-#include "GameState.hpp"
-#include "PhysicsEngine.hpp"
+#include "core/GameState.hpp"
+#include "core/PhysicsEngine.hpp"
+
 #include <cstdlib>
 #include <ctime>
 

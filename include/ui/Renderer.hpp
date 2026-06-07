@@ -1,7 +1,7 @@
 #pragma once
-#include "../core/GameState.hpp"
+#pragma once
+#include "core/GameState.hpp"
 #include <raylib.h>
-
 
 using namespace std;
 
