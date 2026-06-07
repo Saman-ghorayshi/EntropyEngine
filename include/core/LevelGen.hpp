@@ -29,7 +29,7 @@ public:
         }
 
         // random seed (stack overflow said use time)
-        srand(time(NULL)); 
+        srand((unsigned int)time(NULL));
         
         // 3) scramble it by play random legal moves
         int steps_done = 0;
