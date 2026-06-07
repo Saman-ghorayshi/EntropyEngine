@@ -1,7 +1,5 @@
 #pragma once
 #include "core/GameState.hpp"
-#include "core/PhysicsEngine.hpp"
-
 #include <cstdlib>
 #include <ctime>
 
@@ -9,11 +7,9 @@ using namespace std;
 
 class LevelGen {
 public:
-    // generates a garenteed solvable level
     static GameState make_level(int num_colors, int empty_flasks, int mix_steps) {
         GameState s;
         
-        // 1) solved state
         for(int c = 1; c <= num_colors; c++) {
             Flask f;
             for(int i = 0; i < f.max_cap; i++) {
@@ -22,25 +18,27 @@ public:
             s.board.push_back(f);
         }
         
-        // 2) adding teh empty bottles
         for(int i = 0; i < empty_flasks; i++) {
             Flask f;
             s.board.push_back(f);
         }
 
-        // random seed (stack overflow said use time)
-        srand((unsigned int)time(NULL));
+        srand((unsigned int)time(NULL)); 
         
-        // 3) scramble it by play random legal moves
         int steps_done = 0;
-        int failsafe = 0; // stop infinite loops if it stucked
+        int failsafe = 0; 
         
+        // fix: entropy scattering
         while(steps_done < mix_steps && failsafe < 10000) {
             int f1 = rand() % s.board.size();
             int f2 = rand() % s.board.size();
             
-            if(PhysicsEngine::can_pour(s, f1, f2)) {
-                s = PhysicsEngine::do_pour(s, f1, f2);
+            // matching colors dont matter
+            // grab one block ..
+            if(f1 != f2 && !s.board[f1].colors.empty() && s.board[f2].colors.size() < s.board[f2].max_cap) {
+                int moving_color = s.board[f1].colors.back();
+                s.board[f1].colors.pop_back();
+                s.board[f2].colors.push_back(moving_color);
                 steps_done++;
             }
             failsafe++;
