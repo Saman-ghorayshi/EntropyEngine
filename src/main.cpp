@@ -2,46 +2,43 @@
 #include <raylib.h>
 #include "core/GameState.hpp"
 #include "core/LevelGen.hpp"
-#include "core/PhysicsEngine.hpp" //for pour 
+#include "core/PhysicsEngine.hpp"
 #include "ui/Renderer.hpp"
-#include "ai/Solver.hpp"   
+#include "ui/Dashboard.hpp" 
+#include "ai/Solver.hpp"
 
 using namespace std;
 
 int main() {
-    cout << "[SYSTEM] Booting interactive AI mode..." << endl;
+    cout << "[SYSTEM] Booting Enterprise Engine..." << endl;
 
-    // lowered mix steps slightly so the BFS solver doesnt take 5 sec to think
     GameState current_board = LevelGen::make_level(5, 2, 20);
 
-    int screen_w = 900;
+    // lets go for expantion
+    int screen_w = 1200; 
     int screen_h = 500;
-    InitWindow(screen_w, screen_h, "Entropy Engine - AI Assisted");
+    InitWindow(screen_w, screen_h, "Entropy Engine - Telemetry Mode");
     SetTargetFPS(60);
 
     int selected_flask = -1;
+    
+    // keep data to draw
+    AIMetrics latest_ai_data; 
 
     while (!WindowShouldClose()) {
         
-       
-        //ai solver
+        // --- INPUT LOGIC ---
         if(IsKeyPressed(KEY_SPACE)) {
-            cout << ">> Spacebar pressed. Dispatching AI Solver..." << endl;
-            vector<Move> best_path = Solver::solve_bfs(current_board);
+            // grab the metric struct
+            latest_ai_data = Solver::solve_bfs(current_board);
             
-            if(!best_path.empty()) {
-                // excute first move of opt path
-                Move next_move = best_path[0];
+            if(latest_ai_data.success && !latest_ai_data.path.empty()) {
+                Move next_move = latest_ai_data.path[0];
                 current_board = PhysicsEngine::do_pour(current_board, next_move.from, next_move.to);
-                cout << ">> AI executed move: " << next_move.from << " -> " << next_move.to << endl;
-            } else {
-                cout << ">> AI ERROR: Board is currently unsolvable." << endl;
             }
-            // drop any held bottles
             selected_flask = -1; 
         }
 
-        // mouse
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             int mx = GetMouseX();
             int my = GetMouseY();
@@ -67,6 +64,8 @@ int main() {
                 } else {
                     if(PhysicsEngine::can_pour(current_board, selected_flask, clicked_idx)) {
                         current_board = PhysicsEngine::do_pour(current_board, selected_flask, clicked_idx);
+                        // reset ai stat
+                        latest_ai_data.success = false; 
                     }
                     selected_flask = -1; 
                 }
@@ -75,13 +74,16 @@ int main() {
             }
         }
 
-        // draw
+        // draw logic
         BeginDrawing();
         ClearBackground(GetColor(0x181818ff)); 
 
-        DrawText("Entropy Engine - Left Click to Pour | Press SPACE for AI assist", 20, 20, 20, LIGHTGRAY);
+        DrawText("Left Click to Pour | Press SPACE to trigger AI Graph Search", 20, 20, 20, LIGHTGRAY);
         
         Renderer::draw_board(current_board, selected_flask);
+        
+        //draw
+        Dashboard::draw(screen_w, screen_h, latest_ai_data);
 
         EndDrawing();
     }

@@ -5,27 +5,36 @@
 #include <unordered_set>
 #include <vector>
 #include <iostream>
+#include <chrono> //sub mili
+#include <string>
 
 using namespace std;
 
-//  struct to hold a move
 struct Move {
     int from;
     int to;
 };
 
+// new struct
+struct AIMetrics {
+    vector<Move> path;
+    int nodes_explored = 0;
+    double compute_time_ms = 0.0;
+    bool success = false;
+};
+
 class Solver {
 public:
-    // returns a list of moves to win/ empty list if impossible
-    static vector<Move> solve_bfs(const GameState& start_state) {
-        // queue holds the current board & the history of moves to get there
+    static AIMetrics solve_bfs(const GameState& start_state) {
+        AIMetrics metrics;
+        // clock accurate
+        auto start_time = chrono::high_resolution_clock::now();
+
         queue<pair<GameState, vector<Move>>> q;
         unordered_set<GameState> visited;
 
         q.push({start_state, {}});
         visited.insert(start_state);
-
-        int nodes_checked = 0; // metrics
 
         while(!q.empty()) {
             auto curr = q.front();
@@ -33,33 +42,28 @@ public:
             vector<Move> path = curr.second;
             q.pop();
 
-            nodes_checked++;
+            metrics.nodes_explored++;
 
-            // check if we won this branch
             bool win = true;
             for(const auto& f : s.board) {
-                if(!f.is_done()) {
-                    win = false;
-                    break;
-                }
+                if(!f.is_done()) { win = false; break; }
             }
 
             if(win) {
-                cout << ">> AI solved it! Explored " << nodes_checked << " unique states." << endl;
-                return path;
+                // stop  clock
+                auto end_time = chrono::high_resolution_clock::now();
+                metrics.compute_time_ms = chrono::duration<double, milli>(end_time - start_time).count();
+                metrics.path = path;
+                metrics.success = true;
+                return metrics;
             }
 
-            // brute force every possible move on this board
             for(int i = 0; i < s.board.size(); i++) {
                 for(int j = 0; j < s.board.size(); j++) {
-                    
                     if(PhysicsEngine::can_pour(s, i, j)) {
                         GameState next_s = PhysicsEngine::do_pour(s, i, j);
-                        
-                        // if we havent seen this exact board before, add to queue
                         if(visited.find(next_s) == visited.end()) {
                             visited.insert(next_s);
-                            
                             vector<Move> new_path = path;
                             new_path.push_back({i, j});
                             q.push({next_s, new_path});
@@ -69,7 +73,9 @@ public:
             }
         }
 
-        cout << ">> AI failed. Level trapped in unsolveable state." << endl;
-        return {};
+        // if we fail just record the time anyway
+        auto end_time = chrono::high_resolution_clock::now();
+        metrics.compute_time_ms = chrono::duration<double, milli>(end_time - start_time).count();
+        return metrics;
     }
 };
