@@ -2,36 +2,78 @@
 #include <raylib.h>
 #include "core/GameState.hpp"
 #include "core/LevelGen.hpp"
-#include "ui/Renderer.hpp" 
+#include "core/PhysicsEngine.hpp" //for pour
+#include "ui/Renderer.hpp"
 
 using namespace std;
 
 int main() {
-    cout << "[SYSTEM] Booting graphical mode..." << endl;
+    cout << "[SYSTEM] Booting interactive mode..." << endl;
 
-    // generate a puzzle 5 color, 2 empty,30 mix
-    GameState current_board = LevelGen::make_level(5,2,30);
+    GameState current_board = LevelGen::make_level(5, 2, 30);
 
-    // start window
     int screen_w = 900;
     int screen_h = 500;
-    InitWindow(screen_w, screen_h, "Entropy Engine - Visual Test");
+    InitWindow(screen_w, screen_h, "Entropy Engine - Interactive");
     SetTargetFPS(60);
 
-    // standard game loop
+    // state variable to remember which bottle we clicked first
+    int selected_flask = -1;
+
     while (!WindowShouldClose()) {
         
-        BeginDrawing();
-        ClearBackground(GetColor(0x181818ff)); // dark backgroudn
+        // --- INPUT LOGIC ---
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            int mx = GetMouseX();
+            int my = GetMouseY();
 
-        // draw text
-        DrawText("Entropy Engine - Core Rendering Test", 20, 20, 20, LIGHTGRAY);
-        Renderer::draw_board(current_board);
+            // hardcoded layout math from our renderer
+            int start_x = 100;
+            int y = 150;
+            int spacing = 100;
+            int clicked_idx = -1;
+
+            // check if mouse is inside any of the bottle hitboxes
+            for(int i = 0; i < current_board.board.size(); i++) {
+                int fx = start_x + (i * spacing);
+                if(mx >= fx && mx <= fx + 60 && my >= y && my <= y + 200) {
+                    clicked_idx = i;
+                    break;
+                }
+            }
+
+            if(clicked_idx != -1) {
+                if(selected_flask == -1) {
+                    // pick up the bottle (only if it has liquid)
+                    if(!current_board.board[clicked_idx].colors.empty()) {
+                        selected_flask = clicked_idx;
+                    }
+                } else {
+                    // try to pour it
+                    if(PhysicsEngine::can_pour(current_board, selected_flask, clicked_idx)) {
+                        current_board = PhysicsEngine::do_pour(current_board, selected_flask, clicked_idx);
+                    }
+                    // drop the bottle whether it worked or not
+                    selected_flask = -1; 
+                }
+            } else {
+                // clicked empty background, drop bottle
+                selected_flask = -1;
+            }
+        }
+
+        // --- DRAW LOGIC ---
+        BeginDrawing();
+        ClearBackground(GetColor(0x181818ff)); 
+
+        DrawText("Entropy Engine - Click to Pour", 20, 20, 20, LIGHTGRAY);
+        
+        // pass the selected_flask to the renderer so it knows what to pop up
+        Renderer::draw_board(current_board, selected_flask);
 
         EndDrawing();
     }
 
-    // clean up memo when press x
     CloseWindow();
     return 0;
 }
