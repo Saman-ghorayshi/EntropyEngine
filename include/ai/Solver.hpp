@@ -5,17 +5,13 @@
 #include <unordered_set>
 #include <vector>
 #include <iostream>
-#include <chrono> //sub mili
+#include <chrono>
 #include <string>
 
 using namespace std;
 
-struct Move {
-    int from;
-    int to;
-};
+struct Move { int from; int to; };
 
-// new struct
 struct AIMetrics {
     vector<Move> path;
     int nodes_explored = 0;
@@ -23,57 +19,83 @@ struct AIMetrics {
     bool success = false;
 };
 
+
+struct AStarNode {
+    GameState state;
+    vector<Move> path;
+    int g; // cost 
+    int f; // g +
+
+    // priority queue  lowest f cost first
+    bool operator>(const AStarNode& other) const { return f > other.f; }
+};
+
 class Solver {
+private:
+    // messy
+    static int get_heuristic(const GameState& s) {
+        int h = 0;
+        for(const auto& f : s.board) {
+            if(f.colors.empty()) continue;
+                for(int i = 1; i < f.colors.size(); i++) {
+                if(f.colors[i] != f.colors[i-1]) h += 2; 
+            }
+        }
+        return h;
+    }
+
 public:
-    static AIMetrics solve_bfs(const GameState& start_state) {
+    static AIMetrics solve_astar(const GameState& start_state) {
         AIMetrics metrics;
-        // clock accurate
         auto start_time = chrono::high_resolution_clock::now();
 
-        queue<pair<GameState, vector<Move>>> q;
+        //instead basic put priority_queue
+        priority_queue<AStarNode, vector<AStarNode>, greater<AStarNode>> pq;
         unordered_set<GameState> visited;
 
-        q.push({start_state, {}});
-        visited.insert(start_state);
+        pq.push({start_state, {}, 0, get_heuristic(start_state)});
+        
+        while(!pq.empty()) {
+            auto curr = pq.top();
+            pq.pop();
 
-        while(!q.empty()) {
-            auto curr = q.front();
-            GameState s = curr.first;
-            vector<Move> path = curr.second;
-            q.pop();
+            // found faster ? skip 
+            if(visited.find(curr.state) != visited.end()) continue;
+            visited.insert(curr.state);
 
             metrics.nodes_explored++;
 
             bool win = true;
-            for(const auto& f : s.board) {
+            for(const auto& f : curr.state.board) {
                 if(!f.is_done()) { win = false; break; }
             }
 
             if(win) {
-                // stop  clock
                 auto end_time = chrono::high_resolution_clock::now();
                 metrics.compute_time_ms = chrono::duration<double, milli>(end_time - start_time).count();
-                metrics.path = path;
+                metrics.path = curr.path;
                 metrics.success = true;
                 return metrics;
             }
 
-            for(int i = 0; i < s.board.size(); i++) {
-                for(int j = 0; j < s.board.size(); j++) {
-                    if(PhysicsEngine::can_pour(s, i, j)) {
-                        GameState next_s = PhysicsEngine::do_pour(s, i, j);
+            // explore valid branches
+            for(int i = 0; i < curr.state.board.size(); i++) {
+                for(int j = 0; j < curr.state.board.size(); j++) {
+                    if(PhysicsEngine::can_pour(curr.state, i, j)) {
+                        GameState next_s = PhysicsEngine::do_pour(curr.state, i, j);
+                        
                         if(visited.find(next_s) == visited.end()) {
-                            visited.insert(next_s);
-                            vector<Move> new_path = path;
+                            vector<Move> new_path = curr.path;
                             new_path.push_back({i, j});
-                            q.push({next_s, new_path});
+                            int new_g = curr.g + 1;
+                            int new_f = new_g + get_heuristic(next_s);
+                            pq.push({next_s, new_path, new_g, new_f});
                         }
                     }
                 }
             }
         }
-
-        // if we fail just record the time anyway
+        
         auto end_time = chrono::high_resolution_clock::now();
         metrics.compute_time_ms = chrono::duration<double, milli>(end_time - start_time).count();
         return metrics;

@@ -11,10 +11,9 @@ using namespace std;
 
 int main() {
     cout << "[SYSTEM] Booting Enterprise Engine..." << endl;
+    // declare board
+    GameState current_board = LevelGen::make_level(5, 2, 60);
 
-    GameState current_board = LevelGen::make_level(5, 2, 20);
-
-    // lets go for expantion
     int screen_w = 1200; 
     int screen_h = 500;
     InitWindow(screen_w, screen_h, "Entropy Engine - Telemetry Mode");
@@ -27,10 +26,10 @@ int main() {
 
     while (!WindowShouldClose()) {
         
-        // --- INPUT LOGIC ---
+        // input
         if(IsKeyPressed(KEY_SPACE)) {
-            // grab the metric struct
-            latest_ai_data = Solver::solve_bfs(current_board);
+            // A* call big gun
+            latest_ai_data = Solver::solve_astar(current_board);
             
             if(latest_ai_data.success && !latest_ai_data.path.empty()) {
                 Move next_move = latest_ai_data.path[0];
@@ -74,7 +73,7 @@ int main() {
             }
         }
 
-        // draw logic
+        // draw
         BeginDrawing();
         ClearBackground(GetColor(0x181818ff)); 
 
@@ -82,7 +81,6 @@ int main() {
         
         Renderer::draw_board(current_board, selected_flask);
         
-        //draw
         Dashboard::draw(screen_w, screen_h, latest_ai_data);
 
         EndDrawing();

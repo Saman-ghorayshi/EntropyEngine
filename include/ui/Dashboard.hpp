@@ -19,7 +19,7 @@ public:
         DrawText("AI TELEMETRY", panel_x + pad, 20, 20, RAYWHITE);
         DrawLine(panel_x + pad, 45, panel_x + panel_w - pad, 45, GRAY);
 
-        DrawText("Search Algorithm: BFS Graph", panel_x + pad, 60, 10, LIGHTGRAY);
+        DrawText("Search Algorithm: A* Heuristic", panel_x + pad, 60, 10, LIGHTGRAY);
 
         string status = metrics.success ? "Status: SOLVED" : "Status: IDLE / PLAYING";
         Color status_color = metrics.success ? GREEN : ORANGE;
