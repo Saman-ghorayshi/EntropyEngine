@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: configure (tests only, no GUI)
+        run: cmake -B build -DENTROPY_BUILD_APP=OFF -DENTROPY_BUILD_TESTS=ON
+      - name: build
+        run: cmake --build build -- -j
+      - name: run tests
+        run: cd build && ctest --output-on-failure
