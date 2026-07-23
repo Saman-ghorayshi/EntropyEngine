@@ -25,6 +25,7 @@
 build/
 out/
 .cmake/
+_deps/
 CMakeCache.txt
 CMakeFiles/
 CMakeScripts/
@@ -35,4 +36,5 @@ compile_commands.json
 # IDEs (VS Code / Visual Studio)
 .vscode/
 .vs/
+.cache/
 *.swp
