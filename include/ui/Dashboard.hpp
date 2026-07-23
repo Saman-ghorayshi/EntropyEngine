@@ -32,14 +32,11 @@ public:
         string time_str = "Compute Time: " + to_string(metrics.compute_time_ms).substr(0, 6) + " ms";
         DrawText(time_str.c_str(), panel_x + pad, 160, 10, LIGHTGRAY);
 
-        // showing the full path size when the engine only plays one move
-        // per SPACE press was misleading, so label it as the full solve
-        // length and let the player track progress themselves.
+        // showing the path length when the engine only plays one move
+        // per SPACE press is misleading, so label it as the full solve
         string depth = "Full Solve Length: " + to_string(metrics.path.size()) + " moves";
         DrawText(depth.c_str(), panel_x + pad, 190, 10, LIGHTGRAY);
 
-        // ponytail: hint line rebuilds a string every frame. cheap at 60fps
-        // for a single text line; only matters if the dashboard grows.
         string hint = metrics.success
             ? "SPACE: advance one AI move"
             : "click flasks to pour, SPACE to solve";

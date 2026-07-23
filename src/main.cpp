@@ -63,9 +63,7 @@ int main() {
                 } else {
                     if(PhysicsEngine::can_pour(current_board, selected_flask, clicked_idx)) {
                         current_board = PhysicsEngine::do_pour(current_board, selected_flask, clicked_idx);
-                        // a manual move invalidates the last AI solve path,
-                        // so drop the stale telemetry entirely instead of
-                        // leaving a half-played path on screen.
+                        // manual move means the AI path is stale
                         latest_ai_data = AIMetrics{};
                     }
                     selected_flask = -1; 
