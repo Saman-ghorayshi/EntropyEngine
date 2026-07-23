@@ -47,7 +47,7 @@ int main() {
             int spacing = 100;
             int clicked_idx = -1;
 
-            for(int i = 0; i < current_board.board.size(); i++) {
+            for(int i = 0; i < (int)current_board.board.size(); i++) {
                 int fx = start_x + (i * spacing);
                 if(mx >= fx && mx <= fx + 60 && my >= y && my <= y + 200) {
                     clicked_idx = i;

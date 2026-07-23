@@ -13,7 +13,7 @@ struct Flask {
 
     bool is_done() const {
         if(colors.empty()) return true;
-        if(colors.size() < max_cap) return false;
+        if((int)colors.size() < max_cap) return false;
         int c = colors[0];
         for(int i = 1; i < (int)colors.size(); i++)
             if(colors[i] != c) return false;

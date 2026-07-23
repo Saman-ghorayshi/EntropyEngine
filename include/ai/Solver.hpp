@@ -37,7 +37,7 @@ private:
         int h = 0;
         for(const auto& f : s.board) {
             if(f.colors.empty()) continue;
-                for(int i = 1; i < f.colors.size(); i++) {
+                for(int i = 1; i < (int)f.colors.size(); i++) {
                 if(f.colors[i] != f.colors[i-1]) h += 2; 
             }
         }
@@ -79,8 +79,8 @@ public:
             }
 
             // explore valid branches
-            for(int i = 0; i < curr.state.board.size(); i++) {
-                for(int j = 0; j < curr.state.board.size(); j++) {
+            for(int i = 0; i < (int)curr.state.board.size(); i++) {
+                for(int j = 0; j < (int)curr.state.board.size(); j++) {
                     if(PhysicsEngine::can_pour(curr.state, i, j)) {
                         GameState next_s = PhysicsEngine::do_pour(curr.state, i, j);
                         

@@ -14,7 +14,7 @@ public:
         const Flask& f2 = state.board[to_idx];
 
         if(f1.colors.empty()) return false; // nothing to pour
-        if(f2.colors.size() >= f2.max_cap) return false; // dest is full
+        if((int)f2.colors.size() >= f2.max_cap) return false; // dest is full
 
         // if dest is empty, we can always pour into it
         if(f2.colors.empty()) return true;
@@ -35,7 +35,7 @@ public:
         // keep pouring the same color block as long as there is space
         while(!state.board[from_idx].colors.empty() && 
               state.board[from_idx].colors.back() == moving_color &&
-              state.board[to_idx].colors.size() < state.board[to_idx].max_cap) {
+              (int)state.board[to_idx].colors.size() < state.board[to_idx].max_cap) {
             
             state.board[from_idx].colors.pop_back();
             state.board[to_idx].colors.push_back(moving_color);

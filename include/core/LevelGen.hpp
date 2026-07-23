@@ -35,7 +35,7 @@ public:
             
             // matching colors dont matter
             // grab one block ..
-            if(f1 != f2 && !s.board[f1].colors.empty() && s.board[f2].colors.size() < s.board[f2].max_cap) {
+            if(f1 != f2 && !s.board[f1].colors.empty() && (int)s.board[f2].colors.size() < s.board[f2].max_cap) {
                 int moving_color = s.board[f1].colors.back();
                 s.board[f1].colors.pop_back();
                 s.board[f2].colors.push_back(moving_color);
